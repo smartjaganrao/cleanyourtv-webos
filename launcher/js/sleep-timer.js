@@ -88,12 +88,10 @@
             }, 50);
 
             setTimeout(() => {
-                // Try Tizen official power API
+                // Try webOS official power API
                 try {
-                    if (window.tizen && tizen.power && tizen.power.turnOffScreen) {
-                        tizen.power.turnOffScreen();
-                    } else if (window.TizenAPI && TizenAPI.sendKey) {
-                        TizenAPI.sendKey('KEY_POWER');
+                    if (window.WebOSAPI && WebOSAPI.turnOffScreen) {
+                        WebOSAPI.turnOffScreen();
                     }
                 } catch(e) {
                     console.log('[SleepTimer] Standby triggered:', e);

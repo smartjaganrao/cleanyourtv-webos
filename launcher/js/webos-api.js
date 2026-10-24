@@ -245,6 +245,14 @@ const WebOSAPI = {
         } else {
             window.close();
         }
+    },
+
+    turnOffScreen: function() {
+        this.callLuna('luna://com.webos.service.tv.power/power/turnOffScreen', {}, function() {});
+    },
+
+    powerOff: function() {
+        this.callLuna('luna://com.webos.service.tv.power/power/powerOff', {}, function() {});
     }
 };
 

@@ -1,0 +1,8 @@
+# LG 60UP7750PTZ (webOS 6.x) Recommended Settings
+1. Settings → General → Additional Settings → Home Settings:
+   - Home Auto Launch = OFF
+2. Settings → General → Additional Settings:
+   - Live Plus = OFF
+   - Do Not Sell My Info / Limit AD Tracking = ON
+3. Developer Mode:
+   - Developer Mode session token renewal can be automated with com.pirate.refresh or cron job.

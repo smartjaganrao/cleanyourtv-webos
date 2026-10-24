@@ -1,0 +1,43 @@
+name: Build & Release LG webOS Package (.ipk)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Package webOS IPK Application
+        run: |
+          python3 tools/package_ipk.py
+          ls -la *.ipk
+          sha256sum *.ipk > com.cleanyourtv.home.ipk.sha256
+          echo "Built package SHA256:"
+          cat com.cleanyourtv.home.ipk.sha256
+
+      - name: Create GitHub Release & Upload Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: CleanHub TV LG webOS ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            *.ipk
+            *.sha256

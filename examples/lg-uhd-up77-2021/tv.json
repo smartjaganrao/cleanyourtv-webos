@@ -1,0 +1,15 @@
+{
+  "model": "LG 60UP7750PTZ (2021)",
+  "series": "4K Real UHD Series",
+  "webos_version": "webOS 6.5.3",
+  "panel": "4K IPS UHD HDR10 Pro",
+  "theme": "default",
+  "dock": [
+    "youtube.leanback.v4",
+    "hotstar",
+    "com.cctv.viewer",
+    "com.zee5.app"
+  ],
+  "screensaver_minutes": 5,
+  "ambient_glow": true
+}

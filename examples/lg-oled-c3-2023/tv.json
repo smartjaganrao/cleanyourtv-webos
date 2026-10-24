@@ -1,0 +1,15 @@
+{
+  "model": "LG OLED C3 (2023)",
+  "series": "OLED C Series",
+  "webos_version": "webOS 8.0 (webOS 23)",
+  "panel": "4K OLED evo 120Hz Dolby Vision",
+  "theme": "default",
+  "dock": [
+    "youtube.leanback.v4",
+    "netflix",
+    "hotstar",
+    "com.cctv.viewer"
+  ],
+  "screensaver_minutes": 5,
+  "ambient_glow": true
+}

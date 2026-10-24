@@ -1,0 +1,10 @@
+# LG OLED C3 Recommended Debloat & Optimization Checklist
+1. Settings → General → System → Additional Settings → Home Settings:
+   - Home Auto Launch = OFF (Prevents intrusive LG webOS full-screen home dashboard)
+   - Home Promotion = OFF (Disables sponsored trending carousels)
+2. Settings → General → OLED Care:
+   - Pixel Cleaning = Auto
+   - Screen Move (Pixel Shift) = ON (CleanHub TV Art Mode includes companion burn-in prevention)
+3. Settings → General → System → Additional Settings:
+   - Live Plus (ACR Tracking) = OFF
+   - Advertisement / Limit AD Tracking = ON

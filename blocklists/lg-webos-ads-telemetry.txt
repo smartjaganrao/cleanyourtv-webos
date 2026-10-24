@@ -1,0 +1,63 @@
+# ==============================================================================
+# CleanHub TV - LG webOS Smart TV Ads, ACR & Telemetry Blocklist
+# Targets LG ThinQ telemetry, home screen banner ads, Automatic Content Recognition (ACR),
+# and sponsored trailer streaming tracking on webOS 4.x - webOS 24+.
+# Compatible with Pi-hole, AdGuard Home, NextDNS, router dnsmasq & pfSense/OPNsense.
+# ==============================================================================
+
+# LG Smart Ad & Banner Engines
+ad.lgsmartad.com
+common.lgsmartad.com
+info.lgsmartad.com
+lgsmartad.com
+service.lgsmartad.com
+us.ad.lgsmartad.com
+in.ad.lgsmartad.com
+uk.ad.lgsmartad.com
+eu.ad.lgsmartad.com
+ru.ad.lgsmartad.com
+korea.ad.lgsmartad.com
+us.info.lgsmartad.com
+in.info.lgsmartad.com
+uk.info.lgsmartad.com
+
+# LG App Store Ads & Promotions
+ad.lgappstv.com
+aic-opsvc.lgappstv.com
+nudge.lgtvcommon.com
+cdns.lgtvcommon.com
+smartexchange.lgtvcommon.com
+
+# LG ACR (Automatic Content Recognition) & Viewing Tracking
+acr0.voicegateway.lge.com
+aic.lgtvcommon.com
+aic-ngfts.lge.com
+aic-ru.lge.com
+aic.lgtvsdp.com
+aic.rdx2.lgtvsdp.com
+rdx2.lgtvsdp.com
+us.rdx2.lgtvsdp.com
+in.rdx2.lgtvsdp.com
+
+# LG Telemetry & Analytics Services
+ibis.lgappstv.com
+lgtvonline.lge.com
+smartshare.lgtvsdp.com
+us.lgtvsdp.com
+in.lgtvsdp.com
+kr.lgtvsdp.com
+eic.lgtvcommon.com
+qt2-ngfts.lge.com
+
+# Third-Party Ad Networks bundled with webOS
+alphonso.tv
+tv.alphonso.tv
+smartclip.com
+smartclip.net
+yumenetworks.com
+ad-delivery.net
+innovid.com
+springserve.com
+spotxchange.com
+tremorhub.com
+scorecardresearch.com

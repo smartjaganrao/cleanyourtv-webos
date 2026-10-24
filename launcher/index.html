@@ -13,24 +13,28 @@
     <div id="wallpaper" class="wallpaper"></div>
 
     <div class="launcher-container" id="launcher-container">
-        <!-- Top Status Bar: Clock, Date, Inputs, Network, Settings -->
+        <!-- Top Status Bar: Clock, Date, Title, and Actions -->
         <header class="top-bar">
-            <div class="greeting-section">
-                <div class="clock" id="digital-clock">12:00</div>
-                <div class="date" id="current-date">Friday, October 24</div>
-                <div class="sys-stats" id="sys-stats" style="display:none;">RAM: 72% free · LG webOS 6.5 / 24</div>
-                <div class="sys-stats" id="gamepad-status-pill" style="display:none; color:#10b981; font-weight:600;">🎮 Controller Connected</div>
+            <div class="header-left">
+                <div class="clock-row">
+                    <span class="clock" id="digital-clock">10:59 pm</span>
+                    <span class="date" id="current-date">Thursday, 22 October</span>
+                    <span class="sys-stats" id="sys-stats" style="display:none;">RAM: 72% free</span>
+                    <span class="sys-stats" id="gamepad-status-pill" style="display:none; color:#10b981; font-weight:600;">🎮 Controller Connected</span>
+                </div>
+                <div class="title-row">
+                    <h1 class="shelf-app-name" id="focused-app-name">YouTube</h1>
+                    <span class="shelf-subtitle" id="focused-app-desc" style="display:none;">Press OK to launch</span>
+                </div>
             </div>
 
             <div class="top-actions">
-                <button class="glass-pill-btn nav-item" id="btn-arcade" data-nav="action" data-action="arcade">
+                <button class="glass-pill-btn nav-item" id="btn-settings" data-nav="action" data-action="settings">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="6" width="20" height="12" rx="4"></rect>
-                        <path d="M6 12h4m-2-2v4"></path>
-                        <line x1="15" y1="11" x2="15" y2="11.01"></line>
-                        <line x1="18" y1="13" x2="18" y2="13.01"></line>
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
-                    <span>Arcade</span>
+                    <span>Settings</span>
                 </button>
 
                 <button class="glass-pill-btn nav-item" id="btn-livetv" data-nav="action" data-action="livetv">
@@ -49,30 +53,14 @@
                     <span>CCTV</span>
                 </button>
 
-                <button class="glass-pill-btn nav-item" id="btn-artmode" data-nav="action" data-action="artmode">
+                <button class="glass-pill-btn nav-item" id="btn-arcade" data-nav="action" data-action="arcade">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
+                        <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+                        <path d="M6 12h4m-2-2v4"></path>
+                        <line x1="15" y1="11" x2="15" y2="11.01"></line>
+                        <line x1="18" y1="13" x2="18" y2="13.01"></line>
                     </svg>
-                    <span>Art Mode</span>
-                </button>
-
-                <button class="glass-pill-btn nav-item" id="btn-music" data-nav="action" data-action="music">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="5.5" cy="17.5" r="3.5"></circle>
-                        <circle cx="17.5" cy="15.5" r="3.5"></circle>
-                        <path d="M9 17.5V5l12-2v12.5"></path>
-                    </svg>
-                    <span>Lo-Fi Radio</span>
-                </button>
-
-                <button class="glass-pill-btn nav-item" id="btn-sleep" data-nav="action" data-action="sleep">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Sleep Timer</span>
+                    <span>Arcade</span>
                 </button>
 
                 <button class="glass-pill-btn nav-item" id="btn-inputs" data-nav="action" data-action="inputs">
@@ -82,36 +70,22 @@
                     </svg>
                     <span>Inputs</span>
                 </button>
-
-                <button class="glass-pill-btn nav-item" id="btn-settings" data-nav="action" data-action="settings">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                    </svg>
-                    <span>Settings</span>
-                </button>
             </div>
         </header>
 
-        <!-- Top Shelf: Names focused app with large typography -->
-        <section class="top-shelf">
-            <div class="shelf-brand" id="shelf-brand">CleanHub TV</div>
-            <div class="shelf-app-name" id="focused-app-name">Netflix</div>
-            <div class="shelf-subtitle" id="focused-app-desc">Press OK to launch</div>
-        </section>
-
-        <!-- Main Content Area: Dock & Scrollable App Grid -->
+        <!-- Main Content Area: Left-aligned Favorites & All Apps Grid -->
         <main class="content-viewport" id="content-viewport">
-            <!-- Dock: 4-6 pinned favorite apps in glass band -->
-            <section class="dock-section">
+            <!-- Favorites Section: 4 Wide 16:9 Cards -->
+            <section class="section-block favorites-section">
+                <div class="section-label">FAVORITES</div>
                 <div class="dock-container" id="dock-container">
                     <!-- Dock items injected dynamically by app.js -->
                 </div>
             </section>
 
-            <!-- All Apps Grid: Revealed on scroll down -->
-            <section class="grid-section" id="grid-section">
-                <div class="section-title">All Applications</div>
+            <!-- All Apps Section: 10-column Squarish Cards -->
+            <section class="section-block all-apps-section" id="grid-section">
+                <div class="section-label">ALL APPS</div>
                 <div class="app-grid" id="app-grid">
                     <!-- Grid items injected dynamically by app.js -->
                 </div>

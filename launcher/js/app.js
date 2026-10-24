@@ -192,7 +192,11 @@ function initLauncher() {
                 focusedApp = state.apps[state.dockIndex];
             }
         } else if (state.currentZone === 'GRID') {
-            contentViewportEl.classList.add('show-grid');
+            if (state.gridIndex >= 10) {
+                contentViewportEl.classList.add('show-grid');
+            } else {
+                contentViewportEl.classList.remove('show-grid');
+            }
             const gridCards = appGridEl.querySelectorAll('.grid-card');
             if (gridCards[state.gridIndex]) {
                 focusedEl = gridCards[state.gridIndex];
@@ -491,7 +495,7 @@ function initLauncher() {
         }
 
         const key = e.keyCode;
-        const GRID_COLUMNS = 6;
+        const GRID_COLUMNS = 10;
         const dockCount = LauncherConfig.settings.dockSize;
         const gridCount = state.apps.length;
 
@@ -528,13 +532,13 @@ function initLauncher() {
                 if (state.currentZone === 'GRID') {
                     if (state.gridIndex < GRID_COLUMNS) {
                         state.currentZone = 'DOCK';
-                        state.dockIndex = Math.min(dockCount - 1, state.gridIndex);
+                        state.dockIndex = Math.min(dockCount - 1, Math.floor(state.gridIndex / 2.5));
                     } else {
                         state.gridIndex -= GRID_COLUMNS;
                     }
                 } else if (state.currentZone === 'DOCK') {
                     state.currentZone = 'TOP';
-                    state.topIndex = 0;
+                    state.topIndex = Math.min(topActionBtns.length - 1, state.dockIndex);
                 } else if (state.currentZone === 'MODAL') {
                     let activeModalEl = null;
                     if (state.currentModal === 'inputs') activeModalEl = inputsModalEl;
@@ -554,10 +558,10 @@ function initLauncher() {
             case 40: // Down
                 if (state.currentZone === 'TOP') {
                     state.currentZone = 'DOCK';
-                    state.dockIndex = 0;
+                    state.dockIndex = Math.min(dockCount - 1, state.topIndex);
                 } else if (state.currentZone === 'DOCK') {
                     state.currentZone = 'GRID';
-                    state.gridIndex = 0;
+                    state.gridIndex = Math.min(gridCount - 1, state.dockIndex * 2);
                 } else if (state.currentZone === 'GRID') {
                     if (state.gridIndex + GRID_COLUMNS < gridCount) {
                         state.gridIndex += GRID_COLUMNS;
@@ -629,19 +633,26 @@ function initLauncher() {
     // 8. Clock & Date Tick
     function updateClock() {
         const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
+        let hours = now.getHours();
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        const timeStr = `${hours}:${minutes}`;
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const timeStr = `${hours}:${minutes} ${ampm}`;
 
-        const dateOptions = { weekday: 'long', month: 'long', day: 'numeric' };
-        const dateStr = now.toLocaleDateString('en-US', dateOptions);
+        const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+        const dateStr = now.toLocaleDateString('en-GB', dateOptions);
 
-        document.getElementById('digital-clock').textContent = timeStr;
-        document.getElementById('current-date').textContent = dateStr;
+        const clockEl = document.getElementById('digital-clock');
+        if (clockEl) clockEl.textContent = timeStr;
+        const dateEl = document.getElementById('current-date');
+        if (dateEl) dateEl.textContent = dateStr;
 
         if (state.isScreensaverActive) {
-            document.getElementById('ss-clock').textContent = timeStr;
-            document.getElementById('ss-date').textContent = dateStr;
+            const ssClock = document.getElementById('ss-clock');
+            if (ssClock) ssClock.textContent = timeStr;
+            const ssDate = document.getElementById('ss-date');
+            if (ssDate) ssDate.textContent = dateStr;
         }
     }
     setInterval(updateClock, 1000);

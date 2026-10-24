@@ -101,6 +101,10 @@ def install_ipk(tv_ip, ipk_path, key_file=None, app_id="com.cleanyourtv.home"):
 
     # 4. Launch Application
     print(f"[*] Launching {app_id} on TV display...")
+    close_cmd = f"luna-send-pub -n 1 luna://com.webos.service.applicationmanager/close '{{\"id\":\"{app_id}\"}}'"
+    run_ssh_command(tv_ip, close_cmd, key_file)
+    import time
+    time.sleep(1)
     launch_cmd = f"luna-send-pub -n 1 luna://com.webos.service.applicationmanager/launch '{{\"id\":\"{app_id}\"}}'"
     res = run_ssh_command(tv_ip, launch_cmd, key_file)
     print(f"[*] Launch response: {res.stdout.strip()}")

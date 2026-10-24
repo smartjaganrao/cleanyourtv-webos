@@ -2,7 +2,7 @@
  * CleanHub TV Launcher Controller for LG webOS TV
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+function initLauncher() {
     WebOSAPI.init();
     if (window.IPTVPlayer) IPTVPlayer.init();
     if (window.CCTVViewer) CCTVViewer.init();
@@ -37,34 +37,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 1. Initialize Applications List
     function initApps() {
+        // Immediate render of default catalog for zero-latency startup
+        state.apps = (window.DEFAULT_CATALOG || (typeof MockApps !== 'undefined' ? MockApps.getApps() : [])).slice();
+        renderDock();
+        renderGrid();
+        updateFocus();
+
+        // Query platform in background to merge any newly discovered installed apps
         WebOSAPI.getInstalledApps(function(installedApps) {
-            let catalog = window.DEFAULT_CATALOG.slice();
+            if (!installedApps || installedApps.length === 0) return;
+            let catalog = (window.DEFAULT_CATALOG || []).slice();
             
-            if (installedApps && installedApps.length > 0) {
-                // Merge real installed apps with catalog
-                installedApps.forEach(function(inst) {
-                    const match = catalog.find(c => c.id === inst.id || c.aliasId === inst.id);
-                    if (match) {
-                        match.name = inst.name || match.name;
-                        if (inst.iconPath) match.icon = inst.iconPath;
-                    } else if (inst.show !== false) {
-                        catalog.push({
-                            id: inst.id,
-                            name: inst.name || inst.id,
-                            desc: 'Installed Application',
-                            icon: inst.iconPath || window.APP_ICONS.browser,
-                            color: 'rgba(100, 150, 255, 0.3)',
-                            isDock: false
-                        });
-                    }
-                });
-            }
+            installedApps.forEach(function(inst) {
+                const match = catalog.find(c => c.id === inst.id || c.aliasId === inst.id);
+                if (match) {
+                    match.name = inst.name || match.name;
+                    if (inst.iconPath) match.icon = inst.iconPath;
+                } else if (inst.show !== false) {
+                    catalog.push({
+                        id: inst.id,
+                        name: inst.name || inst.id,
+                        desc: 'Installed Application',
+                        icon: inst.iconPath || window.APP_ICONS.browser,
+                        color: 'rgba(100, 150, 255, 0.3)',
+                        isDock: false
+                    });
+                }
+            });
 
             state.apps = catalog;
             renderDock();
             renderGrid();
             updateFocus();
         });
+    }
+
+    function getFallbackIconSvg(app) {
+        const letter = (app.name || 'A').charAt(0).toUpperCase();
+        const color = app.color || '#3b82f6';
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" rx="36" fill="${color}"/><text x="80" y="105" font-family="-apple-system,system-ui,sans-serif" font-size="72" font-weight="700" fill="#ffffff" text-anchor="middle">${letter}</text></svg>`;
+        return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
 
     // 2. Render Dock (Default 4-6 pinned apps)
@@ -82,6 +94,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <img class="app-icon" src="${app.icon}" alt="${app.name}">
                 </div>
             `;
+
+            const imgEl = card.querySelector('img.app-icon');
+            imgEl.onerror = function() {
+                this.onerror = null;
+                this.src = getFallbackIconSvg(app);
+            };
 
             card.addEventListener('click', function() {
                 state.currentZone = 'DOCK';
@@ -109,6 +127,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="card-caption">${app.name}</div>
             `;
+
+            const imgEl = card.querySelector('img.app-icon');
+            imgEl.onerror = function() {
+                this.onerror = null;
+                this.src = getFallbackIconSvg(app);
+            };
 
             card.addEventListener('click', function() {
                 state.currentZone = 'GRID';
@@ -238,6 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (app.id === "cleanyourtv.gamepadtester" || app.aliasId === "gamepadtester") {
                 if (window.GamepadManager) GamepadManager.open();
+                return;
+            }
             if (app.id === "com.cctv.viewer" || app.id === "cctv") {
                 if (window.CCTVViewer) CCTVViewer.open();
                 return;
@@ -670,4 +696,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.AmbientMusic) AmbientMusic.init();
     if (window.NetworkDiagnostic) NetworkDiagnostic.init();
     resetIdleTimer();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLauncher);
+} else {
+    initLauncher();
+}

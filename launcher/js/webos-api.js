@@ -6,7 +6,7 @@
 
 const WebOSAPI = {
     isWebOS: function() {
-        return typeof window.webOS !== 'undefined' || typeof window.PalmSystem !== 'undefined' || /Web0S|webOS/i.test(navigator.userAgent);
+        return typeof window.PalmSystem !== 'undefined' || typeof window.PalmServiceBridge !== 'undefined' || typeof window.webOS !== 'undefined' || /Web0S|webOS/i.test(navigator.userAgent);
     },
 
     init: function() {
@@ -35,45 +35,95 @@ const WebOSAPI = {
         console.log('[WebOSAPI] Remote key listener initialized.');
     },
 
-    getInstalledApps: function(callback) {
-        if (!this.isWebOS()) {
-            if (typeof MockApps !== 'undefined' && MockApps.getApps) {
-                callback(MockApps.getApps());
-            } else {
-                callback(null);
+    /**
+     * Call native Luna Service bus using PalmServiceBridge or webOS.service.request
+     */
+    callLuna: function(uri, params, onSuccess, onFailure) {
+        if (typeof window.PalmServiceBridge !== 'undefined') {
+            try {
+                var bridge = new window.PalmServiceBridge();
+                bridge.onservicecallback = function(msg) {
+                    try {
+                        var res = JSON.parse(msg);
+                        if (res && res.returnValue !== false) {
+                            if (onSuccess) onSuccess(res);
+                        } else {
+                            if (onFailure) onFailure(res);
+                        }
+                    } catch(e) {
+                        if (onFailure) onFailure(e);
+                    }
+                };
+                bridge.call(uri, JSON.stringify(params || {}));
+                return;
+            } catch (e) {
+                console.error('[WebOSAPI] PalmServiceBridge error:', e);
             }
+        }
+
+        if (window.webOS && window.webOS.service) {
+            window.webOS.service.request(uri, {
+                parameters: params || {},
+                onSuccess: onSuccess,
+                onFailure: onFailure
+            });
             return;
         }
 
-        // 1. Try local dev_helper bridge first if available (bypasses unprivileged luna restrictions)
-        fetch('http://127.0.0.1:8765/api/apps')
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data && data.apps && data.apps.length > 0) {
-                    var list = data.apps.map(function(app) {
-                        return {
-                            id: app.id,
-                            name: app.title || app.name || app.id,
-                            iconPath: app.icon || ('http://127.0.0.1:8765/icon/' + encodeURIComponent(app.id)),
-                            version: app.version || '1.0.0',
-                            show: true
-                        };
-                    });
-                    callback(list);
-                } else {
-                    fallbackLunaListApps(callback);
-                }
-            })
-            .catch(function() {
-                fallbackLunaListApps(callback);
-            });
+        if (onFailure) onFailure(new Error('No Luna bridge available'));
+    },
 
-        function fallbackLunaListApps(cb) {
-            if (window.webOS && window.webOS.service) {
-                window.webOS.service.request('luna://com.webos.applicationManager', {
-                    method: 'listApps',
-                    parameters: {},
-                    onSuccess: function(res) {
+    getInstalledApps: function(callback) {
+        var catalog = (typeof MockApps !== 'undefined' && MockApps.getApps) ? MockApps.getApps() : (window.DEFAULT_CATALOG || []);
+
+        if (!this.isWebOS()) {
+            callback(catalog);
+            return;
+        }
+
+        var called = false;
+        function finish(list) {
+            if (!called) {
+                called = true;
+                callback(list || catalog);
+            }
+        }
+
+        // Fast fallback timer so UI never hangs waiting for network or bridge
+        var timer = setTimeout(function() {
+            finish(catalog);
+        }, 350);
+
+        // Try local dev_helper bridge with quick timeout
+        try {
+            var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var fetchTimer = ctrl ? setTimeout(function() { ctrl.abort(); }, 250) : null;
+
+            fetch('http://127.0.0.1:8765/api/apps', { signal: ctrl ? ctrl.signal : undefined })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (fetchTimer) clearTimeout(fetchTimer);
+                    clearTimeout(timer);
+                    if (data && data.apps && data.apps.length > 0) {
+                        var list = data.apps.map(function(app) {
+                            return {
+                                id: app.id,
+                                name: app.title || app.name || app.id,
+                                iconPath: app.icon || ('http://127.0.0.1:8765/icon/' + encodeURIComponent(app.id)),
+                                version: app.version || '1.0.0',
+                                show: true
+                            };
+                        });
+                        finish(list);
+                    } else {
+                        finish(catalog);
+                    }
+                })
+                .catch(function() {
+                    if (fetchTimer) clearTimeout(fetchTimer);
+                    // Try Luna listApps
+                    WebOSAPI.callLuna('luna://com.webos.applicationManager/listApps', {}, function(res) {
+                        clearTimeout(timer);
                         if (res && res.apps) {
                             var list = res.apps.map(function(app) {
                                 return {
@@ -84,18 +134,16 @@ const WebOSAPI = {
                                     show: !app.systemApp
                                 };
                             });
-                            cb(list);
+                            finish(list);
                         } else {
-                            cb(typeof MockApps !== 'undefined' ? MockApps.getApps() : null);
+                            finish(catalog);
                         }
-                    },
-                    onFailure: function() {
-                        cb(typeof MockApps !== 'undefined' ? MockApps.getApps() : null);
-                    }
+                    }, function() {
+                        finish(catalog);
+                    });
                 });
-            } else {
-                cb(typeof MockApps !== 'undefined' ? MockApps.getApps() : null);
-            }
+        } catch(e) {
+            finish(catalog);
         }
     },
 
@@ -108,42 +156,30 @@ const WebOSAPI = {
             return;
         }
 
-        // 1. Try local dev_helper bridge (has background process execution)
-        fetch('http://127.0.0.1:8765/api/launch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: appId, params: {} })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (data && data.returnValue !== false) {
-                if (onSuccess) onSuccess();
-            } else {
-                launchViaLuna();
-            }
-        })
-        .catch(function() {
-            launchViaLuna();
+        // 1. Direct native Luna applicationManager launch via PalmServiceBridge
+        this.callLuna('luna://com.webos.applicationManager/launch', { id: appId }, function(res) {
+            console.log('[WebOSAPI] Native launch successful:', res);
+            if (onSuccess) onSuccess(res);
+        }, function(err) {
+            console.warn('[WebOSAPI] Native Luna launch failed, falling back to dev_helper...', err);
+            // 2. Fallback to dev_helper bridge
+            fetch('http://127.0.0.1:8765/api/launch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: appId, params: {} })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.returnValue !== false) {
+                    if (onSuccess) onSuccess(data);
+                } else if (onError) {
+                    onError(err);
+                }
+            })
+            .catch(function(e) {
+                if (onError) onError(e || err);
+            });
         });
-
-        function launchViaLuna() {
-            if (window.webOS && window.webOS.service) {
-                window.webOS.service.request('luna://com.webos.applicationManager', {
-                    method: 'launch',
-                    parameters: { id: appId },
-                    onSuccess: function(res) {
-                        console.log('[WebOSAPI] Luna launch success:', res);
-                        if (onSuccess) onSuccess();
-                    },
-                    onFailure: function(err) {
-                        console.error('[WebOSAPI] Luna launch failed:', err);
-                        if (onError) onError(err);
-                    }
-                });
-            } else {
-                if (onError) onError(new Error('webOS service unavailable'));
-            }
-        }
     },
 
     launchInput: function(inputId, onSuccess, onError) {
@@ -170,10 +206,24 @@ const WebOSAPI = {
             return;
         }
 
+        try {
+            if (window.PalmSystem && window.PalmSystem.deviceInfo) {
+                var info = typeof window.PalmSystem.deviceInfo === 'string' ? JSON.parse(window.PalmSystem.deviceInfo) : window.PalmSystem.deviceInfo;
+                if (info && info.modelName) {
+                    callback({
+                        model: 'LG ' + info.modelName,
+                        version: 'webOS ' + (info.platformVersion || '6.0'),
+                        network: info.screenWidth ? (info.screenWidth + 'x' + info.screenHeight + ' 4K') : 'Connected'
+                    });
+                    return;
+                }
+            }
+        } catch(e) {}
+
         if (window.webOS && window.webOS.deviceInfo) {
             window.webOS.deviceInfo(function(device) {
                 callback({
-                    model: device.modelName || 'LG Smart TV',
+                    model: device.modelName ? ('LG ' + device.modelName) : 'LG Smart TV',
                     version: 'webOS ' + (device.version || '6.0'),
                     network: 'Connected (Wi-Fi/Ethernet)'
                 });
@@ -188,7 +238,9 @@ const WebOSAPI = {
     },
 
     exitApp: function() {
-        if (window.webOS && window.webOS.platformBack) {
+        if (window.PalmSystem && window.PalmSystem.platformBack) {
+            window.PalmSystem.platformBack();
+        } else if (window.webOS && window.webOS.platformBack) {
             window.webOS.platformBack();
         } else {
             window.close();

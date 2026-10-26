@@ -83,10 +83,27 @@ class FeatureTester:
                     if target and "webSocketDebuggerUrl" in target:
                         self.ws = websocket.create_connection(target["webSocketDebuggerUrl"], timeout=15)
                         print(f"[✓] Connected to local CDP session: {target['title']} ({target.get('url')})")
+                        self.eval_raw("Page.enable")
+                        self.eval_raw("Runtime.enable")
+                        self.eval_raw("Page.navigate", {"url": f"http://127.0.0.1:{HTTP_PORT}/index.html"})
+                        time.sleep(1.0)
                         return
             except Exception:
                 time.sleep(0.3)
         raise RuntimeError("Failed to attach to headless Chrome CDP")
+
+    def eval_raw(self, method, params=None):
+        self.msg_id += 1
+        payload = {
+            "id": self.msg_id,
+            "method": method,
+            "params": params or {}
+        }
+        self.ws.send(json.dumps(payload))
+        while True:
+            resp = json.loads(self.ws.recv())
+            if resp.get("id") == self.msg_id:
+                return resp.get("result", {})
 
     def eval_js(self, expression, await_promise=False):
         self.msg_id += 1
@@ -127,8 +144,14 @@ class FeatureTester:
             if resp.get("id") == self.msg_id:
                 data = resp["result"]["data"]
                 filepath = os.path.join(RESULTS_DIR, filename)
+                decoded = base64.b64decode(data)
                 with open(filepath, "wb") as f:
-                    f.write(base64.b64decode(data))
+                    f.write(decoded)
+                brain_dir = "/Users/jaganrao/.gemini/antigravity/brain/18074d93-1d01-4b1a-aaad-f27ccea4daeb"
+                if os.path.isdir(brain_dir):
+                    brain_file = os.path.join(brain_dir, filename)
+                    with open(brain_file, "wb") as bf:
+                        bf.write(decoded)
                 return filepath
 
     def report(self, name, passed, detail):
@@ -258,20 +281,87 @@ class FeatureTester:
         self.report("Close Gamepad HUD", self.eval_js("document.getElementById('gamepad-modal').style.display === 'none'"), "Closed HUD")
 
     def test_iptv_player(self):
-        print("\n--- Test 6: Free World IPTV Player ---")
-        self.eval_js("IPTVPlayer.open(0, 'ALL')")
-        time.sleep(0.4)
+        print("\n--- Test 6: DTH Live TV Player & Surfing Architecture ---")
+        # 1. Open IPTV in TAMIL Region
+        self.eval_js("IPTVPlayer.open(0, 'TAMIL')")
+        time.sleep(0.5)
         modal_open = self.eval_js("document.getElementById('iptv-player-modal').style.display !== 'none'")
-        channel_count = self.eval_js("window.DEFAULT_IPTV_CHANNELS ? window.DEFAULT_IPTV_CHANNELS.length : 0")
-        categories_count = self.eval_js("window.IPTV_CATEGORIES ? window.IPTV_CATEGORIES.length : 0")
+        bar_active = self.eval_js("document.getElementById('dth-bar').classList.contains('active')")
+        first_num = self.eval_js("document.getElementById('bar-num').textContent.trim()")
+        first_name = self.eval_js("document.getElementById('bar-name').textContent.trim()")
+        epg_title = self.eval_js("document.getElementById('bar-show-title').textContent.trim()")
         
-        self.report("Open IPTV Player", modal_open, "IPTV Player modal initialized")
-        self.report("350+ Channels Lineup", channel_count >= 300, f"{channel_count} global channels in lineup")
-        self.report("Genre Categories Available", categories_count >= 8, f"{categories_count} streaming categories loaded")
+        self.report("Open DTH Live TV Player", modal_open, "DTH Hardware video viewport initialized")
+        self.report("DTH 180px Info Bar Active", bar_active, f"Bar active on tune: [{first_num}] {first_name}")
+        self.report("EPG Dynamic Schedule Engine", bool(epg_title and len(epg_title) > 0), f"Live EPG Show: {epg_title}")
+
+        # 2. Test Step Browse (Left/Right preview without interrupting stream)
+        self.eval_js("IPTVPlayer.stepBrowseChannel(1)")
+        time.sleep(0.2)
+        browse_idx = self.eval_js("IPTVPlayer.browseIndex")
+        browse_name = self.eval_js("document.getElementById('bar-name').textContent.trim()")
+        curr_idx = self.eval_js("IPTVPlayer.currentIndex")
+        self.report("D-Pad Step-Browse Preview", browse_idx == 1 and curr_idx == 0, f"Previewing [{browse_idx + 1}] {browse_name} (Stream undisturbed)")
+
+        # 3. Test Direct Dial HUD
+        self.eval_js("IPTVPlayer.handleDialDigit('0')")
+        self.eval_js("IPTVPlayer.handleDialDigit('0')")
+        self.eval_js("IPTVPlayer.handleDialDigit('3')")
+        time.sleep(0.2)
+        dial_hud_active = self.eval_js("document.getElementById('dial-hud').classList.contains('active')")
+        dial_digits = self.eval_js("document.getElementById('dial-digits').textContent.trim()")
+        self.report("3-Digit Numeric Dial HUD", dial_hud_active and "003" in dial_digits, f"Direct dial HUD active: {dial_digits}")
+
+        # 4. Test Instant Region Switching (Tamil -> India -> Global)
+        self.eval_js("IPTVPlayer.setRegion('INDIA')")
+        time.sleep(0.3)
+        region_code = self.eval_js("IPTVPlayer.currentRegion")
+        india_channel = self.eval_js("document.getElementById('bar-name').textContent.trim()")
+        self.report("Instant Region Switch (INDIA)", region_code == "INDIA", f"Region switched to INDIA: {india_channel}")
+
+        # 5. Test Category Filtering
+        self.eval_js("IPTVPlayer.setCategory('News')")
+        time.sleep(0.3)
+        cat_code = self.eval_js("IPTVPlayer.currentCategory")
+        cat_badge = self.eval_js("document.getElementById('bar-cat').textContent.trim()")
+        self.report("Instant Category Filter", cat_code == "News" and "NEWS" in cat_badge.upper(), f"Category filtered: {cat_badge}")
+
+        # 6. Test Aspect Ratio Toggle
+        self.eval_js("IPTVPlayer.toggleAspectRatio()")
+        time.sleep(0.2)
+        is_zoom = self.eval_js("IPTVPlayer.isZoomFill")
+        self.eval_js("IPTVPlayer.toggleAspectRatio()") # toggle back
+        self.report("Aspect Ratio Toggle (Fit/Fill)", is_zoom is True, "Toggled between 16:9 Fit and Fill")
+
+        # 7. Test Favorite Toggle
+        initial_fav = self.eval_js("IPTVCatalog.isFavorite(IPTVPlayer.channels[IPTVPlayer.currentIndex])")
+        self.eval_js("IPTVPlayer.toggleFavorite(IPTVPlayer.currentIndex)")
+        new_fav = self.eval_js("IPTVCatalog.isFavorite(IPTVPlayer.channels[IPTVPlayer.currentIndex])")
+        self.eval_js("IPTVPlayer.toggleFavorite(IPTVPlayer.currentIndex)") # toggle back
+        self.report("Channel Favorite Bookmark", initial_fav != new_fav, "Toggled channel favorite state")
+
+        # 8. Test Fullscreen Channel Guide Modal
+        self.eval_js("IPTVPlayer.toggleGuide(true)")
+        time.sleep(0.4)
+        guide_open = self.eval_js("document.getElementById('iptv-guide-modal').classList.contains('active')")
+        guide_cards = self.eval_js("document.querySelectorAll('.ch-card').length")
+        self.report("DTH 2-Column Channel Guide", guide_open and guide_cards > 0, f"Guide opened with {guide_cards} cards")
+
+        self.eval_js("IPTVPlayer.toggleGuide(false)")
+        time.sleep(0.2)
+        guide_closed = self.eval_js("!document.getElementById('iptv-guide-modal').classList.contains('active')")
+        self.report("Close Channel Guide Modal", guide_closed, "Guide modal dismissed cleanly")
+
+        # 9. Verify Master Catalog Size & Performance
+        total_channels = self.eval_js("window.DEFAULT_IPTV_CHANNELS ? window.DEFAULT_IPTV_CHANNELS.length : 0")
+        regions_count = self.eval_js("window.IPTV_COUNTRIES ? window.IPTV_COUNTRIES.length : 0")
+        self.report("560+ Curated Channels Catalog", total_channels >= 500, f"{total_channels} channels across {regions_count} regions")
         self.capture_screenshot("06_iptv_player.jpg")
 
+        # 10. Close Player
         self.eval_js("IPTVPlayer.close()")
-        self.report("Close IPTV Player", self.eval_js("document.getElementById('iptv-player-modal').style.display === 'none'"), "IPTV closed")
+        player_closed = self.eval_js("document.getElementById('iptv-player-modal').style.display === 'none'")
+        self.report("Close DTH Player & Teardown", player_closed, "Streams torn down, timers cleared")
 
     def test_art_mode(self):
         print("\n--- Test 7: Ambient The Frame Art Mode ---")

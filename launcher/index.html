@@ -561,64 +561,112 @@
         <div class="screensaver-hint">Press any button to resume</div>
     </div>
 
-    <!-- Live IPTV Fullscreen Player & Guide -->
-    <div id="iptv-player-modal" class="iptv-player-modal" style="display:none;">
-        <video id="iptv-video" class="iptv-video" playsinline autoplay></video>
-
-        <!-- Loading Buffer Spinner -->
-        <div id="iptv-spinner" class="iptv-spinner" style="display:none;">
-            <div class="spinner-circle"></div>
-            <span>Connecting to Live Stream...</span>
-        </div>
-
-        <!-- On-Screen Display (OSD) Banner -->
-        <div id="iptv-osd" class="iptv-osd">
-            <div class="osd-left">
-                <div class="osd-channel-num" id="osd-channel-num">CH 01</div>
-                <img id="osd-channel-logo" class="osd-channel-logo" src="" alt="logo" style="display:none;">
-                <div class="osd-channel-info">
-                    <div class="osd-channel-name" id="osd-channel-name">ABC News Live</div>
-                    <div class="osd-channel-meta" id="osd-channel-meta">🇺🇸 United States · News · 1080p LIVE</div>
-                </div>
-            </div>
-            <div class="osd-right">
-                <span class="live-pill"><span class="live-dot"></span> LIVE</span>
-                <span class="osd-hint">Press ◄ for Guide · ▲/▼ to surf</span>
+    <!-- Live DTH IPTV Fullscreen Player & Guide -->
+    <div id="iptv-player-modal" class="iptv-player-modal" style="display:none;" tabindex="0">
+        <!-- Fullscreen Video Container -->
+        <div class="video-container" id="iptv-video-container">
+            <video id="iptv-video" class="iptv-video" playsinline autoplay preload="auto"></video>
+            <div id="iptv-spinner" class="iptv-spinner" style="display:none;">
+                <div class="spinner-circle"></div>
+                <span>Connecting to Live Stream...</span>
             </div>
         </div>
 
-        <!-- Sliding EPG Channel Guide Sidebar -->
-        <div id="iptv-sidebar" class="iptv-sidebar">
-            <div class="sidebar-header">
-                <h3>Live World Channels</h3>
-                <span class="sidebar-sub">Free Broadcasts from All Countries · Powered by iptv-org</span>
-            </div>
-            
-            <!-- Genre Category Selector Bar -->
-            <div class="sidebar-categories" id="iptv-categories-bar">
-                <!-- Injected by iptv-player.js -->
+        <!-- Aspect Ratio Notification Pill -->
+        <div id="iptv-aspect-indicator" class="aspect-indicator">SCREEN: FULL SCREEN (EDGE-TO-EDGE)</div>
+
+        <!-- Direct Fullscreen YouTube Leanback Overlay Container -->
+        <div id="dth-overlay-container" class="dth-overlay-container">
+            <!-- Direct Number Dial HUD (Top Right) -->
+            <div id="dial-hud" class="dial-hud">
+                <div class="dial-label">DIALING CHANNEL</div>
+                <div class="dial-digits" id="dial-digits">001</div>
+                <div class="dial-name" id="dial-name">Star Vijay TV HD</div>
             </div>
 
-            <div class="sidebar-columns">
-                <!-- Countries Filter Column -->
-                <div class="sidebar-col countries-col">
-                    <div class="col-title">Countries</div>
-                    <div class="countries-list" id="iptv-countries-list">
-                        <!-- Injected by iptv-player.js -->
+            <!-- Stream Alert Fail-safe -->
+            <div id="stream-alert" class="stream-alert">
+                <div class="alert-title">⚠️ SIGNAL RECOVERY</div>
+                <div class="alert-desc" id="alert-desc">Recovering to Channel 001...</div>
+            </div>
+
+            <!-- YouTube-Style Cinematic Bottom Gradient Scrim -->
+            <div class="dth-scrim" id="dth-scrim"></div>
+
+            <!-- 180px Standard DTH Bottom Information Bar -->
+            <div class="dth-bottom-bar" id="dth-bar">
+                <div class="bar-col-id">
+                    <div class="bar-ch-num" id="bar-num">001</div>
+                    <div class="bar-logo-box">
+                        <img id="bar-logo" src="" alt="logo" onerror="this.style.display='none'; document.getElementById('bar-fallback').style.display='block';">
+                        <div class="bar-logo-fallback" id="bar-fallback">📺 TV</div>
                     </div>
                 </div>
 
-                <!-- Channels List Column -->
-                <div class="sidebar-col channels-col">
-                    <div class="col-title">Channels</div>
-                    <div class="channels-list" id="iptv-channels-list">
-                        <!-- Injected by iptv-player.js -->
+                <div class="bar-col-epg">
+                    <div class="bar-title-row">
+                        <div class="bar-ch-name" id="bar-name">Star Vijay TV HD</div>
+                        <div class="bar-fav-star" id="bar-fav" title="Press RED key to Star">★</div>
+                        <div class="bar-status-pill watching" id="bar-status">NOW PLAYING</div>
+                        <span class="bar-tag tag-hd">HD 1080p</span>
+                        <span class="bar-tag tag-cat" id="bar-cat">ENTERTAINMENT</span>
+                        <span class="bar-tag tag-region" id="bar-region">🇮🇳 TAMIL</span>
+                    </div>
+
+                    <div class="bar-program-row">
+                        <div class="bar-show-title" id="bar-show-title">Vijay Super Matinee Cinema</div>
+                        <div class="bar-show-slot" id="bar-show-slot">02:00 PM - 05:00 PM</div>
+                    </div>
+
+                    <div class="bar-progress-track">
+                        <div class="bar-progress-fill" id="bar-progress-fill"></div>
+                    </div>
+
+                    <div class="bar-next-show">
+                        <b>NEXT:</b> <span id="bar-next-title">05:00 PM • Chellamma &amp; Kanne Kalaimaane</span>
                     </div>
                 </div>
+
+                <div class="bar-col-action">
+                    <button class="bar-tune-action watching" id="btn-tune-selected">
+                        <span class="tune-ok-pill">OK</span>
+                        <span id="tune-btn-text">NOW PLAYING</span>
+                    </button>
+
+                    <div class="bar-clock-row">
+                        <div class="bar-clock" id="bar-clock">17:30</div>
+                    </div>
+                    <div class="bar-nav-hints">◄ / ► Browse • OK Watch • GUIDE / BLUE List • YELLOW Region</div>
+                </div>
             </div>
-            <div class="sidebar-footer">
-                <span>▲/▼ Navigate · ◄/► Columns · OK Select · Back Return</span>
+        </div>
+
+        <!-- Fullscreen DTH Channel Guide Modal -->
+        <div id="iptv-guide-modal" class="dth-guide-modal">
+            <div class="guide-header">
+                <div class="guide-title-box">
+                    <span style="font-size: 2.2rem;">📺</span>
+                    <div class="guide-title" id="guide-header-title">DTH Channel Guide</div>
+                    <div class="guide-counter-badge" id="guide-count">110 Channels</div>
+                </div>
+                <div class="guide-header-hints">
+                    <span><kbd>▲</kbd><kbd>▼</kbd><kbd>◄</kbd><kbd>►</kbd> Navigate</span>
+                    <span><kbd>OK</kbd> Watch</span>
+                    <span><kbd>RED</kbd> Favorite</span>
+                    <span><kbd>YELLOW</kbd> Region</span>
+                    <span><kbd>BACK</kbd> Close</span>
+                    <button class="guide-exit-btn" id="btn-guide-exit">✕ EXIT</button>
+                </div>
             </div>
+
+            <!-- Region & Language Switcher Bar -->
+            <div class="guide-region-bar" id="guide-regions"></div>
+
+            <!-- Category Filter Bar -->
+            <div class="guide-cat-bar" id="guide-cats"></div>
+
+            <!-- 2-Column Channel Grid -->
+            <div class="guide-grid" id="guide-grid"></div>
         </div>
     </div>
 

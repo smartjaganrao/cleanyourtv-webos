@@ -4,7 +4,7 @@
 
 const LauncherConfig = {
     settings: {
-        theme: 'default',
+        theme: 'avengers',
         dockSize: 4,
         ambientGlow: true,
         reducedMotion: false,
@@ -36,6 +36,7 @@ const LauncherConfig = {
 
     getThemes: function() {
         return [
+            { id: 'avengers', name: 'Avengers Cinematic', bg: '#060913', wallpaper: 'linear-gradient(135deg, rgba(6,9,19,0.3) 0%, rgba(6,9,19,0.85) 100%), url(assets/avengers_wallpaper.jpg) center right / cover no-repeat' },
             { id: 'default', name: 'Pitch Black OLED', bg: '#07080b', wallpaper: null },
             { id: 'aurora', name: 'Northern Aurora', bg: '#050c14', wallpaper: 'linear-gradient(135deg, #0b1d28 0%, #03080e 100%)' },
             { id: 'midnight', name: 'Midnight Glass', bg: '#060814', wallpaper: 'linear-gradient(180deg, #0f172a 0%, #020617 100%)' },

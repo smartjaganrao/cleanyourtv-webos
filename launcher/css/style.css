@@ -2550,3 +2550,77 @@ body {
     color: #cbd5e1;
 }
 
+/* ============================================================
+   AVENGERS CINEMATIC THEME (STARK HUD & MARVEL AESTHETIC)
+   ============================================================ */
+body.theme-avengers {
+    --bg-color: #060913;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(224, 242, 254, 0.75);
+    --text-muted: rgba(148, 163, 184, 0.55);
+    --glass-bg: rgba(10, 18, 35, 0.65);
+    --glass-bg-focus: rgba(0, 240, 255, 0.20);
+    --glass-border: rgba(0, 240, 255, 0.25);
+    --dock-glass: rgba(8, 14, 28, 0.75);
+    --focus-ring: #00f0ff;
+    --glow-color: rgba(0, 240, 255, 0.40);
+}
+
+body.theme-avengers .wallpaper {
+    background-size: cover;
+    background-position: center right;
+    opacity: 1 !important;
+    filter: brightness(0.92) contrast(1.05);
+}
+
+body.theme-avengers .dock-card {
+    background: rgba(10, 18, 35, 0.75);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1.5px solid rgba(0, 240, 255, 0.22);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+body.theme-avengers .dock-card.focused {
+    border-color: #00f0ff;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.65), 0 15px 40px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 240, 255, 0.3);
+    transform: scale(1.06);
+}
+
+body.theme-avengers .grid-card {
+    background: rgba(10, 18, 35, 0.70);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(0, 240, 255, 0.18);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+}
+
+body.theme-avengers .grid-card.focused {
+    border-color: #f59e0b;
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.65), 0 12px 35px rgba(0, 0, 0, 0.9);
+    transform: scale(1.08);
+}
+
+body.theme-avengers .glass-pill-btn {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    color: #e2e8f0;
+}
+
+body.theme-avengers .glass-pill-btn.focused {
+    border-color: #00f0ff;
+    background: rgba(0, 240, 255, 0.25);
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.55);
+}
+
+body.theme-avengers #focused-app-name {
+    text-shadow: 0 0 25px rgba(0, 240, 255, 0.5), 0 4px 15px rgba(0, 0, 0, 0.9);
+    letter-spacing: -0.5px;
+}
+
+body.theme-avengers #digital-clock {
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.4), 0 3px 10px rgba(0, 0, 0, 0.8);
+}
+
+

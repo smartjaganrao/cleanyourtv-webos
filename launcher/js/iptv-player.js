@@ -139,29 +139,6 @@ const IPTVPlayer = {
             });
         }
 
-        // Magic Remote mousemove
-        let lastX = 0, lastY = 0;
-        document.addEventListener("mousemove", (e) => {
-            if (!this.isOpen || this.isGuideOpen) return;
-            if (Math.abs(e.clientX - lastX) > 15 || Math.abs(e.clientY - lastY) > 15) {
-                lastX = e.clientX;
-                lastY = e.clientY;
-                if (!this.isBarActive()) {
-                    this.showDTHBar(5000);
-                }
-            }
-        });
-
-        // Wheel surf
-        window.addEventListener("wheel", (e) => {
-            if (!this.isOpen || this.isGuideOpen) return;
-            if (e.deltaY > 0) {
-                this.stepBrowseChannel(1);
-            } else if (e.deltaY < 0) {
-                this.stepBrowseChannel(-1);
-            }
-        });
-
         // Click video container toggles bar
         const container = document.getElementById("iptv-video-container");
         if (container) {
@@ -308,23 +285,23 @@ const IPTVPlayer = {
         this.showSpinner(true);
         this.playStream(channel.url);
 
-        // Safe Watchdog timeout: 8s auto-recovery
+        // Non-intrusive buffer watchdog: NEVER auto-switch channel!
         this.watchdogTimer = setTimeout(() => {
             if (this.videoEl && (this.videoEl.currentTime === 0 || this.videoEl.readyState < 2)) {
-                console.warn("[IPTVPlayer] Watchdog timeout on:", channel.name);
+                console.warn("[IPTVPlayer] Stream buffering:", channel.name);
                 this.showSpinner(false);
-                if (this.currentIndex !== 0) {
-                    if (this.alertDescEl) {
-                        this.alertDescEl.innerText = `No signal on [${this.pad(this.currentIndex + 1)}] ${channel.name}. Recovering to Channel 001...`;
-                    }
-                    if (this.streamAlertEl) this.streamAlertEl.classList.add("show");
-                    this.syncOverlay();
-                    this.fallbackTimer = setTimeout(() => {
-                        this.tuneChannel(0);
-                    }, 3000);
+                if (this.alertDescEl) {
+                    this.alertDescEl.innerText = `Connecting to [${this.pad(this.currentIndex + 1)}] ${channel.name}... Press ▲/▼ for other channels.`;
                 }
+                if (this.streamAlertEl) this.streamAlertEl.classList.add("show");
+                this.syncOverlay();
+                clearTimeout(this.fallbackTimer);
+                this.fallbackTimer = setTimeout(() => {
+                    if (this.streamAlertEl) this.streamAlertEl.classList.remove("show");
+                    this.syncOverlay();
+                }, 4000);
             }
-        }, 8000);
+        }, 12000);
     },
 
     playStream: function(url) {
@@ -332,57 +309,73 @@ const IPTVPlayer = {
         const video = this.videoEl;
         if (!video) return;
 
-        // Try Hls.js first for TV performance
-        if (window.Hls && window.Hls.isSupported()) {
-            this.hls = new Hls({
-                enableWorker: true,
-                lowLatencyMode: true,
-                backBufferLength: 30,
-                maxBufferLength: 8,
-                maxMaxBufferLength: 15
-            });
-            this.hls.loadSource(url);
-            this.hls.attachMedia(video);
+        const isWebOS = /Web0S|webOS/i.test(navigator.userAgent) || !!window.webOS;
 
-            this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                video.play().catch(e => console.warn('Auto-play note:', e));
-                this.showSpinner(false);
-            });
-
-            this.hls.on(Hls.Events.ERROR, (event, data) => {
-                if (data.fatal) {
-                    console.warn('[IPTVPlayer] HLS error:', data.type);
-                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                        this.hls.startLoad();
-                    } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-                        this.hls.recoverMediaError();
-                    } else {
-                        this.handleStreamError();
-                    }
-                }
-            });
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        if (isWebOS && video.canPlayType('application/vnd.apple.mpegurl')) {
+            // WebOS native hardware video pipeline (highest performance on LG Smart TVs)
             video.src = url;
-            video.play().catch(e => console.warn('Native play note:', e));
+            video.play().catch(e => {
+                console.warn('[IPTVPlayer] Native play failed, falling back to Hls.js:', e);
+                this.attachHls(url, video);
+            });
+        } else if (window.Hls && window.Hls.isSupported()) {
+            this.attachHls(url, video);
         } else {
             video.src = url;
-            video.play().catch(e => console.warn('Fallback play note:', e));
+            video.play().catch(e => console.warn('[IPTVPlayer] Direct play note:', e));
         }
+    },
+
+    attachHls: function(url, video) {
+        if (!window.Hls || !window.Hls.isSupported()) {
+            video.src = url;
+            video.play().catch(e => console.warn(e));
+            return;
+        }
+        this.hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            backBufferLength: 30,
+            maxBufferLength: 8,
+            maxMaxBufferLength: 15
+        });
+        this.hls.loadSource(url);
+        this.hls.attachMedia(video);
+
+        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(e => console.warn('[IPTVPlayer] HLS play error:', e));
+            this.showSpinner(false);
+        });
+
+        this.hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+                console.warn('[IPTVPlayer] HLS error:', data.type);
+                if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                    this.hls.startLoad();
+                } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                    this.hls.recoverMediaError();
+                } else {
+                    this.handleStreamError();
+                }
+            }
+        });
     },
 
     handleStreamError: function() {
         this.showSpinner(false);
-        if (this.currentIndex !== 0) {
-            if (this.alertDescEl) {
-                this.alertDescEl.innerText = `Stream offline on [${this.pad(this.currentIndex + 1)}]. Recovering to Channel 001...`;
-            }
-            if (this.streamAlertEl) this.streamAlertEl.classList.add("show");
-            this.syncOverlay();
-            clearTimeout(this.fallbackTimer);
-            this.fallbackTimer = setTimeout(() => {
-                this.tuneChannel(0);
-            }, 2800);
+        const channel = this.channels[this.currentIndex];
+        const name = channel ? channel.name : 'Channel';
+        if (this.alertDescEl) {
+            this.alertDescEl.innerText = `Stream unavailable on [${this.pad(this.currentIndex + 1)}] ${name}. Press ▲/▼ to change channel.`;
         }
+        if (this.streamAlertEl) this.streamAlertEl.classList.add("show");
+        this.syncOverlay();
+        clearTimeout(this.fallbackTimer);
+        // Firm stability: DO NOT AUTO-TUNE TO ANOTHER CHANNEL! Stay on user's choice.
+        this.fallbackTimer = setTimeout(() => {
+            if (this.streamAlertEl) this.streamAlertEl.classList.remove("show");
+            this.syncOverlay();
+        }, 5000);
     },
 
     showSpinner: function(show) {

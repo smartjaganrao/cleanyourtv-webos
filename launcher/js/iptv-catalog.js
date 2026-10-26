@@ -6,11 +6,6 @@
 
 const IPTV_REGIONS = [
     {
-        "code": "ALL",
-        "name": "All Channels",
-        "flag": "\ud83d\udcfa"
-    },
-    {
         "code": "TAMIL",
         "name": "Tamil DTH",
         "flag": "\ud83c\uddee\ud83c\uddf3"
@@ -39,6 +34,11 @@ const IPTV_REGIONS = [
         "code": "FAVORITES",
         "name": "Favorites",
         "flag": "\u2b50"
+    },
+    {
+        "code": "ALL",
+        "name": "All Channels",
+        "flag": "\ud83d\udcfa"
     }
 ];
 

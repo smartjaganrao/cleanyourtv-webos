@@ -273,7 +273,7 @@ function initLauncher() {
                 return;
             }
             if (app.id === "cleanyourtv.livetv" || app.id === "livetv") {
-                if (window.IPTVPlayer) IPTVPlayer.open(0, 'ALL');
+                if (window.IPTVPlayer) IPTVPlayer.open(0, 'TAMIL');
                 return;
             }
             if (app.id === "cleanyourtv.freecinema" || app.aliasId === "freecinema") {
@@ -298,7 +298,7 @@ function initLauncher() {
         if (action === 'arcade') {
             if (window.RetroArcade) RetroArcade.open();
         } else if (action === 'livetv') {
-            if (window.IPTVPlayer) IPTVPlayer.open(0, 'ALL');
+            if (window.IPTVPlayer) IPTVPlayer.open(0, 'TAMIL');
         } else if (action === 'cctv') {
             if (window.CCTVViewer) CCTVViewer.open();
         } else if (action === 'artmode') {
@@ -370,7 +370,7 @@ function initLauncher() {
             const inputId = target.getAttribute('data-input-id');
             closeModal();
             if (inputId === 'TV') {
-                if (window.IPTVPlayer) IPTVPlayer.open(0, 'ALL');
+                if (window.IPTVPlayer) IPTVPlayer.open(0, 'TAMIL');
                 return;
             }
             // Switch HDMI input via webOS API
@@ -607,7 +607,7 @@ function initLauncher() {
                 break;
 
             case 403: // Red Button
-                if (window.IPTVPlayer) IPTVPlayer.open(0, 'ALL');
+                if (window.IPTVPlayer) IPTVPlayer.open(0, 'TAMIL');
                 e.preventDefault();
                 break;
 
@@ -668,6 +668,9 @@ function initLauncher() {
     }
 
     function startScreensaver() {
+        if (window.IPTVPlayer && IPTVPlayer.isOpen) return;
+        if (window.ArtMode && ArtMode.isOpen) return;
+        if (window.AmbientMusic && AmbientMusic.isOpen) return;
         state.isScreensaverActive = true;
         screensaverEl.style.display = 'flex';
         driftScreensaver();

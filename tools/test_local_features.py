@@ -352,13 +352,24 @@ class FeatureTester:
         guide_closed = self.eval_js("!document.getElementById('iptv-guide-modal').classList.contains('active')")
         self.report("Close Channel Guide Modal", guide_closed, "Guide modal dismissed cleanly")
 
-        # 9. Verify Master Catalog Size & Performance
+        # 9. Test Stream Stability & Zero Automatic Channel Switching
+        self.eval_js("IPTVPlayer.setRegion('TAMIL')")
+        self.eval_js("IPTVPlayer.tuneChannel(1)") # Sun TV HD
+        time.sleep(0.5)
+        ch_before = self.eval_js("IPTVPlayer.currentIndex")
+        # Trigger an error event to simulate packet drop
+        self.eval_js("IPTVPlayer.handleStreamError()")
+        time.sleep(3.2)
+        ch_after = self.eval_js("IPTVPlayer.currentIndex")
+        self.report("Zero Auto-Channel Switching", ch_before == 1 and ch_after == 1, "Stayed firmly on user-selected channel without auto-switching")
+
+        # 10. Verify Master Catalog Size & Performance
         total_channels = self.eval_js("window.DEFAULT_IPTV_CHANNELS ? window.DEFAULT_IPTV_CHANNELS.length : 0")
         regions_count = self.eval_js("window.IPTV_COUNTRIES ? window.IPTV_COUNTRIES.length : 0")
         self.report("560+ Curated Channels Catalog", total_channels >= 500, f"{total_channels} channels across {regions_count} regions")
         self.capture_screenshot("06_iptv_player.jpg")
 
-        # 10. Close Player
+        # 11. Close Player
         self.eval_js("IPTVPlayer.close()")
         player_closed = self.eval_js("document.getElementById('iptv-player-modal').style.display === 'none'")
         self.report("Close DTH Player & Teardown", player_closed, "Streams torn down, timers cleared")

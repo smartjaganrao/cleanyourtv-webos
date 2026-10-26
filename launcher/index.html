@@ -19,16 +19,69 @@
                 <div class="clock-row">
                     <span class="clock" id="digital-clock">10:59 pm</span>
                     <span class="date" id="current-date">Thursday, 22 October</span>
+                    <!-- Dynamic Live Widgets: Weather, HDMI & Network -->
+                    <div class="widgets-bar" id="widgets-bar">
+                        <div class="widget-weather" id="widget-weather">
+                            <span class="widget-icon">☀️</span>
+                            <span class="widget-val">29°C</span>
+                            <span class="widget-lbl">Clear</span>
+                        </div>
+                        <div class="widget-hdmi-badges" id="widget-hdmi-badges">
+                            <span class="hdmi-pill active"><span class="hdmi-dot"></span>HDMI 1</span>
+                            <span class="hdmi-pill active earc"><span class="hdmi-dot"></span>HDMI 2 (eARC)</span>
+                        </div>
+                        <div class="widget-network" id="widget-network">
+                            <span class="net-icon">📶</span>
+                            <span class="net-val">5 GHz</span>
+                            <span class="net-dot"></span>
+                            <span class="net-ping">12ms</span>
+                        </div>
+                    </div>
                     <span class="sys-stats" id="sys-stats" style="display:none;">RAM: 72% free</span>
                     <span class="sys-stats" id="gamepad-status-pill" style="display:none; color:#10b981; font-weight:600;">🎮 Controller Connected</span>
                 </div>
-                <div class="title-row">
-                    <h1 class="shelf-app-name" id="focused-app-name">YouTube</h1>
+                <!-- Dynamic Apple TV-Style Top Shelf Preview Hero -->
+                <div class="top-shelf-showcase" id="top-shelf-showcase">
+                    <div class="shelf-header-line">
+                        <span class="shelf-badge" id="shelf-badge">SMART TV APP</span>
+                        <span class="shelf-slot" id="shelf-slot">DOLBY AUDIO</span>
+                    </div>
+                    <h1 class="shelf-app-name" id="shelf-title">YouTube</h1>
+                    <p class="shelf-subtitle" id="shelf-subtitle">Trending 4K Documentaries, Music, Tech & Global News</p>
+                    <div class="shelf-progress-track" id="shelf-progress-track" style="display:none;">
+                        <div class="shelf-progress-fill" id="shelf-progress-fill"></div>
+                    </div>
+                    <div class="shelf-action-hint" id="shelf-action-hint">PRESS OK TO LAUNCH</div>
+                    <!-- Legacy compatibility tags -->
+                    <span class="shelf-app-name" id="focused-app-name" style="display:none;">YouTube</span>
                     <span class="shelf-subtitle" id="focused-app-desc" style="display:none;">Press OK to launch</span>
                 </div>
             </div>
 
             <div class="top-actions">
+                <button class="glass-pill-btn nav-item" id="btn-control-center" data-nav="action" data-action="controlcenter">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" y1="21" x2="4" y2="14"></line>
+                        <line x1="4" y1="10" x2="4" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12" y2="3"></line>
+                        <line x1="20" y1="21" x2="20" y2="16"></line>
+                        <line x1="20" y1="12" x2="20" y2="3"></line>
+                        <line x1="1" y1="14" x2="7" y2="14"></line>
+                        <line x1="9" y1="8" x2="15" y2="8"></line>
+                        <line x1="17" y1="16" x2="23" y2="16"></line>
+                    </svg>
+                    <span>Control Center</span>
+                </button>
+
+                <button class="glass-pill-btn nav-item" id="btn-pip" data-nav="action" data-action="pip">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <rect x="12" y="9" width="8" height="6" rx="1" ry="1"></rect>
+                    </svg>
+                    <span>PiP</span>
+                </button>
+
                 <button class="glass-pill-btn nav-item" id="btn-settings" data-nav="action" data-action="settings">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
@@ -689,6 +742,100 @@
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- PICTURE-IN-PICTURE (PiP) FLOATING LIVE CORNER PLAYER -->
+    <!-- ============================================================ -->
+    <div id="pip-container" class="pip-container" style="display:none;">
+        <video id="pip-video" class="pip-video" muted playsinline></video>
+        <div class="pip-overlay">
+            <div class="pip-top-row">
+                <span class="pip-badge" id="pip-badge">● LIVE TV</span>
+                <span class="pip-title" id="pip-title">Star Vijay TV HD</span>
+            </div>
+            <div class="pip-controls">
+                <button class="pip-btn" id="btn-pip-expand" title="Fullscreen">⤢ Max</button>
+                <button class="pip-btn" id="btn-pip-next" title="Next Channel">⇄ Next</button>
+                <button class="pip-btn" id="btn-pip-close" title="Close PiP">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GLASSMORPHISM SLIDE-OVER CONTROL CENTER -->
+    <!-- ============================================================ -->
+    <div id="cc-backdrop" class="cc-backdrop"></div>
+    <aside id="control-center-panel" class="control-center-panel">
+        <div class="cc-header">
+            <div class="cc-title-box">
+                <div class="cc-badge">CONTROL CENTER</div>
+                <h2 class="cc-title">Quick Settings</h2>
+            </div>
+            <button class="cc-close-btn" id="btn-cc-close">✕</button>
+        </div>
+
+        <div class="cc-content">
+            <!-- Sleep Timer Section -->
+            <div class="cc-section">
+                <div class="cc-section-label">BEDTIME SLEEP TIMER</div>
+                <div class="cc-grid-btns">
+                    <button class="cc-btn cc-sleep-btn active" data-mins="0">OFF</button>
+                    <button class="cc-btn cc-sleep-btn" data-mins="15">15 MIN</button>
+                    <button class="cc-btn cc-sleep-btn" data-mins="30">30 MIN</button>
+                    <button class="cc-btn cc-sleep-btn" data-mins="45">45 MIN</button>
+                    <button class="cc-btn cc-sleep-btn" data-mins="60">60 MIN</button>
+                    <button class="cc-btn cc-sleep-btn" data-mins="90">90 MIN</button>
+                </div>
+            </div>
+
+            <!-- Picture Presets Section -->
+            <div class="cc-section">
+                <div class="cc-section-label">PICTURE & OLED PRESET</div>
+                <div class="cc-grid-btns">
+                    <button class="cc-btn cc-pic-btn active" data-mode="cinema">CINEMA HDR</button>
+                    <button class="cc-btn cc-pic-btn" data-mode="game">120HZ GAME</button>
+                    <button class="cc-btn cc-pic-btn" data-mode="trueblack">OLED TRUEBLACK</button>
+                    <button class="cc-btn cc-pic-btn" data-mode="night">EYE COMFORT</button>
+                </div>
+            </div>
+
+            <!-- Audio Output Section -->
+            <div class="cc-section">
+                <div class="cc-section-label">AUDIO OUTPUT HUB</div>
+                <div class="cc-grid-btns">
+                    <button class="cc-btn cc-sound-btn active" data-sound="earc">HDMI 2 (eARC)</button>
+                    <button class="cc-btn cc-sound-btn" data-sound="internal">TV SPEAKERS</button>
+                    <button class="cc-btn cc-sound-btn" data-sound="bluetooth">BLUETOOTH</button>
+                    <button class="cc-btn cc-sound-btn" data-sound="optical">OPTICAL</button>
+                </div>
+            </div>
+
+            <!-- Multi-Hero Theme Studio Section -->
+            <div class="cc-section">
+                <div class="cc-section-label">CINEMATIC THEME STUDIO</div>
+                <div class="cc-grid-btns">
+                    <button class="cc-btn cc-theme-btn active" data-theme="avengers">AVENGERS</button>
+                    <button class="cc-btn cc-theme-btn" data-theme="spiderverse">SPIDER-VERSE</button>
+                    <button class="cc-btn cc-theme-btn" data-theme="interstellar">INTERSTELLAR</button>
+                    <button class="cc-btn cc-theme-btn" data-theme="gotham">GOTHAM NOIR</button>
+                    <button class="cc-btn cc-theme-btn" data-theme="appletv">APPLE TV</button>
+                    <button class="cc-btn cc-theme-btn" data-theme="dynamic">DYNAMIC DAY/NIGHT</button>
+                </div>
+            </div>
+
+            <!-- TV Health & Memory Purge Section -->
+            <div class="cc-section">
+                <div class="cc-section-label">TV HEALTH & MEMORY PURGE</div>
+                <div class="cc-ram-box">
+                    <div class="cc-ram-track">
+                        <div class="cc-ram-fill" id="cc-ram-fill" style="width: 32%;"></div>
+                    </div>
+                    <div class="cc-ram-text" id="cc-ram-text">1.4 GB / 2.0 GB FREE (72% AVAILABLE)</div>
+                </div>
+                <button class="cc-action-btn" id="btn-purge-ram">⚡ PURGE & BOOST MEMORY</button>
+            </div>
+        </div>
+    </aside>
+
     <!-- Scripts -->
     <script src="js/hls.min.js"></script>
     <script src="js/webos-api.js"></script>
@@ -703,6 +850,11 @@
     <script src="js/gamepad-manager.js"></script>
     <script src="js/retro-arcade.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/widgets.js"></script>
+    <script src="js/top-shelf.js"></script>
+    <script src="js/control-center.js"></script>
+    <script src="js/theme-studio.js"></script>
+    <script src="js/pip-player.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

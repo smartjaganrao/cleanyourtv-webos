@@ -6,6 +6,11 @@ function initLauncher() {
     WebOSAPI.init();
     if (window.IPTVPlayer) IPTVPlayer.init();
     if (window.CCTVViewer) CCTVViewer.init();
+    if (window.Widgets) Widgets.init();
+    if (window.TopShelf) TopShelf.init();
+    if (window.ControlCenter) ControlCenter.init();
+    if (window.ThemeStudio) ThemeStudio.init();
+    if (window.PipPlayer) PipPlayer.init();
     LauncherConfig.load();
 
     const state = {
@@ -227,6 +232,7 @@ function initLauncher() {
             focusedAppNameEl.textContent = focusedApp.name;
             focusedAppDescEl.textContent = focusedApp.desc || 'Press OK to launch';
             setAmbientGlow(focusedApp.color || 'rgba(100, 150, 255, 0.35)');
+            if (window.TopShelf) TopShelf.update(focusedApp);
         }
 
         // Align floating focus highlight
@@ -295,7 +301,11 @@ function initLauncher() {
     function executeTopAction() {
         const btn = topActionBtns[state.topIndex];
         const action = btn.getAttribute('data-action');
-        if (action === 'arcade') {
+        if (action === 'controlcenter') {
+            if (window.ControlCenter) ControlCenter.toggle();
+        } else if (action === 'pip') {
+            if (window.PipPlayer) PipPlayer.toggle();
+        } else if (action === 'arcade') {
             if (window.RetroArcade) RetroArcade.open();
         } else if (action === 'livetv') {
             if (window.IPTVPlayer) IPTVPlayer.open(0, 'TAMIL');
@@ -458,6 +468,12 @@ function initLauncher() {
     function onKeyDown(e) {
         resetIdleTimer();
 
+        if (window.ControlCenter && ControlCenter.isOpen) {
+            if (ControlCenter.handleKeyDown(e)) {
+                return;
+            }
+        }
+
         if (window.IPTVPlayer && IPTVPlayer.isOpen) {
             if (IPTVPlayer.handleKeyDown(e)) {
                 return;
@@ -617,12 +633,14 @@ function initLauncher() {
                 break;
 
             case 405: // Yellow Button
-                if (window.NetworkDiagnostic) NetworkDiagnostic.open();
+                if (window.ControlCenter) ControlCenter.toggle();
+                else if (window.NetworkDiagnostic) NetworkDiagnostic.open();
                 e.preventDefault();
                 break;
 
             case 406: // Blue Button
-                if (window.CCTVViewer) CCTVViewer.open();
+                if (window.PipPlayer) PipPlayer.toggle();
+                else if (window.CCTVViewer) CCTVViewer.open();
                 e.preventDefault();
                 break;
         }

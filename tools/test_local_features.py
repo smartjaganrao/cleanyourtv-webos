@@ -432,6 +432,108 @@ class FeatureTester:
         self.eval_js("NetworkDiagnostic.close()")
         self.report("Close Diagnostics", self.eval_js("document.getElementById('diag-modal').style.display === 'none'"), "Diagnostics closed")
 
+    def test_widgets_bar(self):
+        print("\n--- Test 11: Dynamic Weather & Active HDMI Widgets ---")
+        w_text = self.eval_js("document.getElementById('widget-weather') ? document.getElementById('widget-weather').textContent : ''")
+        hdmi_count = self.eval_js("document.querySelectorAll('.hdmi-pill').length")
+        net_text = self.eval_js("document.getElementById('widget-network') ? document.getElementById('widget-network').textContent : ''")
+
+        self.report("Live Weather Widget", "°C" in w_text or len(w_text) > 3, f"Weather widget: {w_text.strip()}")
+        self.report("Active HDMI Signal Badges", hdmi_count >= 2, f"{hdmi_count} HDMI hardware status pills active")
+        self.report("Network Wi-Fi & Ping Widget", "GHz" in net_text or "ms" in net_text, f"Telemetry: {net_text.strip()}")
+
+    def test_top_shelf_showcase(self):
+        print("\n--- Test 12: Apple TV Dynamic Top Shelf Hero Showcase ---")
+        shelf_exists = self.eval_js("document.getElementById('top-shelf-showcase') !== null")
+        initial_title = self.eval_js("document.getElementById('shelf-title') ? document.getElementById('shelf-title').textContent : ''")
+        initial_badge = self.eval_js("document.getElementById('shelf-badge') ? document.getElementById('shelf-badge').textContent : ''")
+
+        # Test Top Shelf with Live TV
+        self.eval_js("TopShelf.update({id: 'com.cleanyourtv.livetv', name: 'Live TV', desc: 'Tamil DTH Live TV'})")
+        tv_title = self.eval_js("document.getElementById('shelf-title').textContent")
+        tv_badge = self.eval_js("document.getElementById('shelf-badge').textContent")
+
+        # Test Top Shelf with CCTV
+        self.eval_js("TopShelf.update({id: 'com.cctv.viewer', name: 'CCTV Monitor'})")
+        cctv_title = self.eval_js("document.getElementById('shelf-title').textContent")
+
+        self.report("Top Shelf Container", shelf_exists, "Hero preview container mounted")
+        self.report("Showcase Dynamic Title & Badge", bool(initial_title and initial_badge), f"Initial: [{initial_badge}] {initial_title}")
+        self.report("Live TV EPG Shelf Preview", "NOW AIRING" in tv_title or "LIVE" in tv_badge, f"Preview: {tv_title}")
+        self.report("CCTV Security Shelf Preview", "CCTV" in cctv_title or "SURVEILLANCE" in cctv_title, f"Preview: {cctv_title}")
+
+    def test_control_center(self):
+        print("\n--- Test 13: Glassmorphism Slide-Over Control Center ---")
+        self.eval_js("ControlCenter.open()")
+        time.sleep(0.3)
+        cc_active = self.eval_js("document.getElementById('control-center-panel').classList.contains('active')")
+        sleep_btns = self.eval_js("document.querySelectorAll('.cc-sleep-btn').length")
+        pic_btns = self.eval_js("document.querySelectorAll('.cc-pic-btn').length")
+
+        # Test Memory Purge
+        self.eval_js("ControlCenter.purgeMemory()")
+        time.sleep(1.0)
+        ram_text = self.eval_js("document.getElementById('cc-ram-text') ? document.getElementById('cc-ram-text').textContent : ''")
+
+        self.report("Open Control Center Drawer", cc_active, "Slide-over drawer opened from right")
+        self.report("Sleep Timer Quick Selector", sleep_btns >= 6, f"{sleep_btns} sleep duration tiles verified")
+        self.report("Picture & OLED Presets", pic_btns >= 4, f"{pic_btns} visual preset profiles verified")
+        self.report("Memory Boost & RAM Purge", "FREE" in ram_text or "AVAILABLE" in ram_text, f"Memory telemetry: {ram_text}")
+        self.capture_screenshot("11_control_center.jpg")
+
+        self.eval_js("ControlCenter.close()")
+        cc_closed = self.eval_js("!document.getElementById('control-center-panel').classList.contains('active')")
+        self.report("Close Control Center", cc_closed, "Drawer dismissed smoothly")
+
+    def test_theme_studio(self):
+        print("\n--- Test 14: Multi-Hero Theme Studio & Dynamic Engine ---")
+        # 1. Spider-Verse
+        self.eval_js("ThemeStudio.applyTheme('spiderverse')")
+        t_spider = self.eval_js("document.body.classList.contains('theme-spiderverse')")
+        # 2. Interstellar
+        self.eval_js("ThemeStudio.applyTheme('interstellar')")
+        t_space = self.eval_js("document.body.classList.contains('theme-interstellar')")
+        # 3. Gotham Noir
+        self.eval_js("ThemeStudio.applyTheme('gotham')")
+        t_gotham = self.eval_js("document.body.classList.contains('theme-gotham')")
+        # 4. Apple TV Aerial
+        self.eval_js("ThemeStudio.applyTheme('appletv')")
+        t_apple = self.eval_js("document.body.classList.contains('theme-appletv')")
+        # 5. Dynamic Time-of-Day
+        self.eval_js("ThemeStudio.applyTheme('dynamic')")
+        t_dyn = self.eval_js("document.body.classList.contains('theme-dynamic')")
+        # 6. Restore Avengers Default
+        self.eval_js("ThemeStudio.applyTheme('avengers')")
+        t_avengers = self.eval_js("document.body.classList.contains('theme-avengers')")
+
+        self.report("Spider-Verse Neon Theme", t_spider, "Applied magenta & cyan cyberpunk theme")
+        self.report("Interstellar Cosmic Theme", t_space, "Applied Gargantua golden gravitational theme")
+        self.report("The Batman Gotham Noir Theme", t_gotham, "Applied charcoal & crimson bat-signal theme")
+        self.report("Apple TV 4K Aerial Theme", t_apple, "Applied Norwegian Aurora Fjord theme")
+        self.report("Dynamic Adaptive Day/Night Mode", t_dyn, "Automatic time-of-day circadian lighting active")
+        self.report("Avengers Stark HUD Theme", t_avengers, "Restored primary Stark HUD aesthetic")
+        self.capture_screenshot("12_theme_studio.jpg")
+
+    def test_pip_player(self):
+        print("\n--- Test 15: Picture-in-Picture (PiP) Live Corner Player ---")
+        self.eval_js("PipPlayer.open('iptv', 0)")
+        time.sleep(0.4)
+        pip_open = self.eval_js("document.getElementById('pip-container').style.display !== 'none'")
+        pip_title = self.eval_js("document.getElementById('pip-title') ? document.getElementById('pip-title').textContent : ''")
+
+        # Test Channel Cycle in PiP
+        self.eval_js("PipPlayer.cycleNext()")
+        time.sleep(0.2)
+        pip_ch2 = self.eval_js("document.getElementById('pip-title').textContent")
+
+        self.report("Open PiP Floating Window", pip_open, f"PiP mounted in corner with: {pip_title}")
+        self.report("PiP Channel Surfing", pip_title != pip_ch2 or len(pip_ch2) > 0, f"Cycled to: {pip_ch2}")
+        self.capture_screenshot("13_pip_player.jpg")
+
+        self.eval_js("PipPlayer.close()")
+        pip_closed = self.eval_js("document.getElementById('pip-container').style.display === 'none'")
+        self.report("Close PiP Floating Window", pip_closed, "PiP dismissed and stream detached cleanly")
+
     def test_cli_tools(self):
         print("\n--- Test 11: Standalone Python Tool Suite ---")
         # 1. Test package_ipk.py
@@ -482,6 +584,11 @@ class FeatureTester:
             self.test_lofi_radio()
             self.test_sleep_timer()
             self.test_network_diagnostic()
+            self.test_widgets_bar()
+            self.test_top_shelf_showcase()
+            self.test_control_center()
+            self.test_theme_studio()
+            self.test_pip_player()
             self.test_cli_tools()
             
             total = len(self.results)

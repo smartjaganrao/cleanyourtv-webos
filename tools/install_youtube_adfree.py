@@ -14,7 +14,7 @@ import urllib.request
 import json
 import time
 
-YOUTUBE_ADFREE_IPK_URL = "https://github.com/webosbrew/youtube-webos/releases/download/v0.4.3/youtube.leanback.v4_0.4.3_all.ipk"
+YOUTUBE_ADFREE_IPK_URL = "https://github.com/webosbrew/youtube-webos/releases/download/v0.5.3/youtube.leanback.v4_0.5.3_all.ipk"
 HOMEBREW_CHANNEL_URL = "https://github.com/webosbrew/webos-homebrew-channel/releases/download/v0.6.3/org.webosbrew.hbchannel_0.6.3_all.ipk"
 
 def run_ssh(tv_ip, remote_cmd, key_file=None):

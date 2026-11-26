@@ -15,7 +15,7 @@ IPK_FILE = os.path.join(REPO_DIR, "com.cleanyourtv.home_1.5.0_all.ipk")
 
 def main():
     print("=" * 60)
-    print("🚀 CleanHub TV - Deploying to LG webOS TV (192.168.0.202)")
+    print("🚀 CleanHub TV - Deploying to LG webOS TV (lgtv)")
     print("=" * 60)
 
     # 1. Package IPK
